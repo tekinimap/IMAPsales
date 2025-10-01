@@ -1,0 +1,581 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Sales-Beteiligung – Punkte & Prozent</title>
+  <style>
+    :root{
+      --bg:#0b0f14;
+      --panel:#111827;
+      --muted:#6b7280;
+      --text:#e5e7eb;
+      --accent:#4f46e5;
+      --accent-2:#22c55e;
+      --danger:#ef4444;
+      --warn:#f59e0b;
+      --border:#1f2937;
+      --chip:#0f172a;
+      --input:#0b1220;
+      --ring: 0 0 0 2px rgba(79,70,229,.35);
+      --radius:14px;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0; background:linear-gradient(180deg,#0a0d12 0%, #0b1220 100%); color:var(--text);
+      font:15px/1.45 system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,"Helvetica Neue",Arial;
+      letter-spacing:.1px;
+    }
+    .container{max-width:1100px; margin:32px auto; padding:0 16px}
+    .card{
+      background:var(--panel); border:1px solid var(--border); border-radius:var(--radius);
+      box-shadow:0 10px 30px rgba(0,0,0,.35); overflow:hidden;
+    }
+    header.hero{padding:22px 22px 8px}
+    header.hero h1{margin:0 0 6px; font-size:22px; letter-spacing:.3px}
+    header.hero p{margin:0; color:var(--muted); font-size:13px}
+    .content{padding:18px 22px 22px}
+    .row{display:flex; gap:14px; flex-wrap:wrap; align-items:flex-end}
+    label{display:block; font-weight:600; margin:8px 0 6px}
+    input[type="text"], input[type="number"]{
+      width:100%; background:var(--input); color:var(--text); border:1px solid var(--border);
+      border-radius:10px; padding:10px 12px; outline:none; transition:border .2s, box-shadow .2s;
+    }
+    input[type="text"]:focus, input[type="number"]:focus{border-color:var(--accent); box-shadow:var(--ring)}
+    input[type="number"]{text-align:right}
+    .grid-2{display:grid; grid-template-columns:1fr 1fr; gap:14px}
+    .actions{display:flex; gap:10px; flex-wrap:wrap}
+    .btn{
+      appearance:none; border:1px solid var(--border); background:#0e1626; color:var(--text);
+      padding:10px 14px; border-radius:12px; cursor:pointer; font-weight:600;
+      transition:transform .05s ease, border-color .15s ease, background .15s ease;
+    }
+    .btn:hover{border-color:#2c3a57}
+    .btn:active{transform:translateY(1px)}
+    .btn.primary{background:var(--accent); border-color:transparent}
+    .btn.secondary{background:#0d1424}
+    .btn.ghost{background:transparent}
+    .btn.success{background:var(--accent-2); border-color:transparent}
+    .btn.warn{background:var(--warn); color:#111}
+    .btn.danger{background:var(--danger)}
+    .note{color:var(--muted); font-size:12px}
+    .table{
+      width:100%; border-collapse:separate; border-spacing:0; overflow:auto; border:1px solid var(--border);
+      border-radius:12px; background:#0b1120;
+    }
+    table{width:100%; min-width:780px; border-collapse:collapse}
+    thead th{
+      position:sticky; top:0; background:#0d1528; border-bottom:1px solid var(--border);
+      padding:10px 10px; text-align:left; font-size:13px; letter-spacing:.2px; z-index:1;
+    }
+    tbody td{border-top:1px solid var(--border); padding:8px 10px}
+    tbody tr:hover{background:#0c1426}
+    .sumchips{display:flex; gap:10px; flex-wrap:wrap; margin-top:10px}
+    .chip{
+      background:var(--chip); border:1px solid var(--border); border-radius:999px; padding:8px 12px; font-size:12px;
+      display:inline-flex; align-items:center; gap:8px;
+    }
+    .chip .dot{width:8px; height:8px; border-radius:50%}
+    .chip.ok .dot{background:var(--accent-2)}
+    .chip.warn .dot{background:var(--warn)}
+    .chip.bad .dot{background:var(--danger)}
+    .right{display:flex; justify-content:flex-end; align-items:center; gap:8px}
+    .hide{display:none !important}
+    .errorlist{margin:0 0 10px; padding-left:18px; color:#fecaca}
+    .errorlist li{margin:3px 0}
+    .hr{height:1px; background:var(--border); margin:16px 0}
+    .kpi{
+      display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin:10px 0 4px;
+    }
+    .kpi .box{
+      background:#0c1324; border:1px solid var(--border); border-radius:12px; padding:12px;
+    }
+    .kpi .box h3{margin:0; font-size:12px; color:var(--muted); font-weight:600}
+    .kpi .box p{margin:4px 0 0; font-size:18px; font-weight:700}
+    .pill{background:#111b33; border:1px solid var(--border); padding:6px 10px; border-radius:999px; font-size:12px}
+    .results h2{margin:6px 0 8px; font-size:18px}
+    .results table td,.results table th{padding:10px}
+    .results table thead th{background:#0d172b}
+    .results .list{margin:10px 0 0; padding-left:18px}
+    .muted{color:var(--muted)}
+    .teams{
+      display:flex; gap:10px; flex-wrap:wrap; margin-top:12px
+    }
+    .teams a{ text-decoration:none }
+    .mono{font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;}
+    .small{font-size:12px}
+    .foot{display:flex; gap:10px; justify-content:space-between; align-items:center; flex-wrap:wrap}
+    .foot .left, .foot .right{display:flex; gap:10px; align-items:center; flex-wrap:wrap}
+    .tag{font-size:11px; padding:4px 8px; border-radius:999px; background:#0e1a32; border:1px solid var(--border); color:var(--muted)}
+    .sr-only{position:absolute; left:-9999px}
+    .delrow{background:#1a243b; border:1px solid #2a3654; color:#cbd5e1; border-radius:8px; padding:6px 8px; cursor:pointer}
+    .delrow:hover{background:#1c2640}
+    .nowrap{white-space:nowrap}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="card" id="view-input">
+      <header class="hero">
+        <h1>Sales-Beteiligung erfassen</h1>
+        <p>Gewichtete Kategorien: Consultative Selling 50 %, Konzepterstellung 30 %, Pitch 20 %.</p>
+      </header>
+      <div class="content">
+        <div class="grid-2">
+          <div>
+            <label for="auftraggeber">Auftraggeber <span class="note">(Pflichtfeld)</span></label>
+            <input id="auftraggeber" type="text" placeholder="z. B. Deutsche Rentenversicherung Bund" autocomplete="organization" />
+          </div>
+          <div>
+            <label for="projekttitel">Projekttitel <span class="note">(Pflichtfeld)</span></label>
+            <input id="projekttitel" type="text" placeholder="z. B. Basisprogramm Führungskräfte – Los 4" />
+          </div>
+        </div>
+
+        <div style="margin-top:14px">
+          <div class="foot">
+            <div class="left">
+              <span class="tag">Punktebereich je Feld: 0–100 (Ganzzahl)</span>
+              <span class="tag">Kategorie-Summen ≤ 100</span>
+              <span class="tag">Bei Nutzung einer Kategorie: Summe = 100 erforderlich</span>
+            </div>
+            <div class="right">
+              <button class="btn" id="addRowBtn">+ Zeile</button>
+            </div>
+          </div>
+          <div class="table" style="margin-top:10px">
+            <table id="peopleTable" aria-describedby="sumHelp">
+              <thead>
+                <tr>
+                  <th style="width:32%">Name</th>
+                  <th class="nowrap" style="width:18%">Consultative Selling<br><span class="note">Gewicht 50 %</span></th>
+                  <th class="nowrap" style="width:18%">Konzepterstellung<br><span class="note">Gewicht 30 %</span></th>
+                  <th class="nowrap" style="width:18%">Pitch<br><span class="note">Gewicht 20 %</span></th>
+                  <th style="width:14%">Aktion</th>
+                </tr>
+              </thead>
+              <tbody id="tbody"></tbody>
+            </table>
+          </div>
+
+          <div class="sumchips" id="sumChips" aria-live="polite" style="margin-top:12px"></div>
+
+          <ul class="errorlist" id="errors"></ul>
+
+          <div class="hr"></div>
+
+          <div class="actions right">
+            <button class="btn ghost" id="resetBtn">Zurücksetzen</button>
+            <button class="btn primary" id="nextBtn">Weiter zur Ergebnisansicht</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card hide" id="view-result">
+      <header class="hero">
+        <h1>Ergebnisansicht</h1>
+        <p>Prozentuale Beteiligung basierend auf Punkten und dynamisch normalisierten Gewichten.</p>
+      </header>
+      <div class="content results">
+        <div class="kpi">
+          <div class="box"><h3>Auftraggeber</h3><p id="kpi-ag">–</p></div>
+          <div class="box"><h3>Projekttitel</h3><p id="kpi-pt">–</p></div>
+          <div class="box"><h3>Aktive Kategorien</h3><p id="kpi-cat">–</p></div>
+          <div class="box"><h3>Gewichte (normalisiert)</h3><p id="kpi-w">–</p></div>
+        </div>
+
+        <div class="hr"></div>
+
+        <h2>Prozentuale Beteiligung je Person</h2>
+        <div class="table">
+          <table id="resultTable">
+            <thead>
+              <tr>
+                <th style="width:55%">Person</th>
+                <th style="width:45%">Gesamtbeitrag&nbsp;%</th>
+              </tr>
+            </thead>
+            <tbody id="resultBody"></tbody>
+          </table>
+        </div>
+
+        <div style="margin-top:12px">
+          <div class="pill mono small" id="sumCheck">Summe: 100,00 %</div>
+        </div>
+
+        <div class="hr"></div>
+
+        <div>
+          <div class="mono small" style="opacity:.85" id="previewMsg" aria-label="Vorschau der Teams-Nachricht"></div>
+          <div class="actions" style="margin-top:10px">
+            <button class="btn secondary" id="copyMsgBtn">Nachricht in Zwischenablage kopieren</button>
+          </div>
+        </div>
+
+        <div class="hr"></div>
+
+        <div>
+          <div class="note" style="margin-bottom:8px">Per Teams an vordefinierte Empfänger weiterleiten (vorbefüllter Chat-Text, noch nicht gesendet):</div>
+          <div class="teams">
+            <a class="btn success" id="btnOE" target="_blank" rel="noopener">Organisational Excellence</a>
+            <a class="btn success" id="btnPI" target="_blank" rel="noopener">Public Impact</a>
+            <a class="btn success" id="btnCP" target="_blank" rel="noopener">ChangePartner</a>
+          </div>
+        </div>
+
+        <div class="hr"></div>
+
+        <div class="actions">
+          <button class="btn ghost" id="backBtn">Zurück zur Eingabe</button>
+          <button class="btn warn" id="startOverBtn">Neu beginnen</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <template id="rowTpl">
+    <tr>
+      <td><input type="text" class="name" placeholder="Vor- und Nachname" /></td>
+      <td><input type="number" class="cs" inputmode="numeric" min="0" max="100" step="1" value="0" /></td>
+      <td><input type="number" class="konzept" inputmode="numeric" min="0" max="100" step="1" value="0" /></td>
+      <td><input type="number" class="pitch" inputmode="numeric" min="0" max="100" step="1" value="0" /></td>
+      <td><button class="delrow" title="Zeile entfernen">Entfernen</button></td>
+    </tr>
+  </template>
+
+  <script>
+    (() => {
+      const CATEGORIES = [
+        { key: 'cs', label: 'Consultative Selling', weight: 0.50 },
+        { key: 'konzept', label: 'Konzepterstellung', weight: 0.30 },
+        { key: 'pitch', label: 'Pitch', weight: 0.20 },
+      ];
+      const emails = {
+        OE: 'tekin@imap-institut.de',
+        PI: 'bartsch@imap-institut.de',
+        CP: 'freitag@imap-institut.de',
+      };
+
+      const fmtPct = new Intl.NumberFormat('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      const fmtInt = new Intl.NumberFormat('de-DE', { maximumFractionDigits: 0 });
+
+      const $ = (id) => document.getElementById(id);
+      const viewInput  = $('view-input');
+      const viewResult = $('view-result');
+      const tbody = $('tbody');
+      const rowTpl = $('rowTpl');
+
+      const auftraggeber = $('auftraggeber');
+      const projekttitel = $('projekttitel');
+
+      const sumChips = $('sumChips');
+      const errorsEl = $('errors');
+
+      const addRowBtn = $('addRowBtn');
+      const nextBtn = $('nextBtn');
+      const resetBtn = $('resetBtn');
+
+      const backBtn = $('backBtn');
+      const startOverBtn = $('startOverBtn');
+      const copyMsgBtn = $('copyMsgBtn');
+
+      const kpiAg = $('kpi-ag');
+      const kpiPt = $('kpi-pt');
+      const kpiCat = $('kpi-cat');
+      const kpiW = $('kpi-w');
+
+      const resultBody = $('resultBody');
+      const sumCheck = $('sumCheck');
+      const previewMsg = $('previewMsg');
+
+      const btnOE = $('btnOE');
+      const btnPI = $('btnPI');
+      const btnCP = $('btnCP');
+
+      let lastMsgEnc = '';
+      let lastTopicEnc = '';
+
+      function addRow(focusName=false){
+        const node = rowTpl.content.firstElementChild.cloneNode(true);
+        tbody.appendChild(node);
+        if (focusName) node.querySelector('.name').focus();
+        bindRow(node);
+        recalc();
+      }
+
+      function bindRow(tr){
+        tr.addEventListener('input', (ev) => {
+          if (ev.target.matches('input[type="number"]')) {
+            const v = ev.target.value.trim().replace(',', '.');
+            let n = Number(v);
+            if (!Number.isFinite(n)) n = 0;
+            n = Math.round(n);
+            if (n < 0) n = 0;
+            if (n > 100) n = 100;
+            ev.target.value = String(n);
+          }
+          recalc();
+        });
+        tr.querySelector('.delrow').addEventListener('click', () => {
+          tr.remove();
+          recalc();
+        });
+      }
+
+      function readRows(){
+        const rows = [];
+        tbody.querySelectorAll('tr').forEach(tr => {
+          const name = tr.querySelector('.name').value.trim();
+          const cs = toInt(tr.querySelector('.cs').value);
+          const kz = toInt(tr.querySelector('.konzept').value);
+          const pi = toInt(tr.querySelector('.pitch').value);
+          rows.push({ name, cs, konzept:kz, pitch:pi });
+        });
+        return rows;
+      }
+
+      function toInt(v){
+        if (v == null) return 0;
+        const n = Math.round(Number(String(v).replace(',', '.')));
+        return Number.isFinite(n) ? Math.max(0, Math.min(100, n)) : 0;
+      }
+
+      function categoryTotals(rows){
+        const totals = { cs:0, konzept:0, pitch:0 };
+        rows.forEach(r => {
+          totals.cs      += r.cs;
+          totals.konzept += r.konzept;
+          totals.pitch   += r.pitch;
+        });
+        return totals;
+      }
+
+      function usedCategories(totals){
+        return CATEGORIES.filter(c => totals[c.key] > 0);
+      }
+
+      function normalizedWeights(used){
+        const sum = used.reduce((acc,c)=>acc + c.weight, 0);
+        return Object.fromEntries(used.map(c => [c.key, c.weight / (sum || 1)]));
+      }
+
+      function renderSumChips(totals){
+        sumChips.innerHTML = '';
+        CATEGORIES.forEach(c=>{
+          const total = totals[c.key];
+          const chip = document.createElement('div');
+          chip.className = 'chip';
+          const dot = document.createElement('span'); dot.className='dot';
+          const title = document.createElement('span');
+          title.innerHTML = `<strong>${c.label}</strong> &nbsp; ${fmtInt.format(total)} / 100`;
+          chip.appendChild(dot);
+          chip.appendChild(title);
+
+          if (total === 0) chip.classList.add('ok');
+          else if (total === 100) chip.classList.add('ok');
+          else if (total > 100) chip.classList.add('bad');
+          else chip.classList.add('warn');
+
+          sumChips.appendChild(chip);
+        });
+      }
+
+      function validate(){
+        const rows = readRows();
+        const errs = [];
+
+        if (!auftraggeber.value.trim()) errs.push('Auftraggeber ist erforderlich.');
+        if (!projekttitel.value.trim()) errs.push('Projekttitel ist erforderlich.');
+
+        rows.forEach((r, idx) => {
+          const active = (r.cs + r.konzept + r.pitch) > 0;
+          if (active && !r.name) errs.push(`Name in Zeile ${idx+1} ist erforderlich (Punkte vorhanden).`);
+        });
+
+        const anyActive = rows.some(r => (r.cs + r.konzept + r.pitch) > 0);
+        if (!anyActive) errs.push('Mindestens eine Person mit Punkten erfassen.');
+
+        const totals = categoryTotals(rows);
+        CATEGORIES.forEach(c => {
+          if (totals[c.key] > 100){
+            errs.push(`Kategorie „${c.label}“ überschreitet 100 (aktuell ${fmtInt.format(totals[c.key])}).`);
+          }
+        });
+        CATEGORIES.forEach(c => {
+          if (totals[c.key] > 0 && totals[c.key] !== 100){
+            errs.push(`Kategorie „${c.label}“ ist genutzt, Summe muss 100 sein (aktuell ${fmtInt.format(totals[c.key])}).`);
+          }
+        });
+
+        return { ok: errs.length === 0, errs, rows, totals };
+      }
+
+      function recalc(){
+        const rows = readRows();
+        const totals = categoryTotals(rows);
+        renderSumChips(totals);
+
+        const hardErrs = [];
+        CATEGORIES.forEach(c => {
+          if (totals[c.key] > 100){
+            hardErrs.push(`„${CATEGORIES.find(x=>x.key===c.key).label}“: Summe ${fmtInt.format(totals[c.key])} > 100.`);
+          }
+        });
+        errorsEl.innerHTML = hardErrs.map(e=>`<li>${e}</li>`).join('');
+      }
+
+      function computeResults(rows, totals){
+        const used = usedCategories(totals);
+        const nW = normalizedWeights(used);
+
+        const map = new Map();
+        rows.forEach(r => {
+          if (!(r.name || (r.cs+r.konzept+r.pitch)>0)) return;
+          const key = (r.name || '').trim();
+          const cur = map.get(key) || { name: key, cs:0, konzept:0, pitch:0 };
+          cur.cs      += r.cs;
+          cur.konzept += r.konzept;
+          cur.pitch   += r.pitch;
+          map.set(key, cur);
+        });
+
+        const out = [];
+        [...map.values()].forEach(p => {
+          let pct = 0;
+          if (used.some(c=>c.key==='cs') && totals.cs>0)            pct += nW.cs      * (p.cs      / totals.cs);
+          if (used.some(c=>c.key==='konzept') && totals.konzept>0)  pct += nW.konzept * (p.konzept / totals.konzept);
+          if (used.some(c=>c.key==='pitch') && totals.pitch>0)      pct += nW.pitch   * (p.pitch   / totals.pitch);
+          out.push({ name: p.name || '(unbenannt)', pct: pct*100 });
+        });
+
+        out.sort((a,b)=>b.pct - a.pct);
+        const totalPct = out.reduce((acc,x)=>acc + x.pct, 0);
+        const residual = 100 - totalPct;
+        if (out.length && Math.abs(residual) > 1e-9) out[0].pct += residual;
+        out.forEach(x => { if (x.pct < 0) x.pct = 0; });
+
+        return { list: out, used, nW };
+      }
+
+      function buildRawTeamsMessage(list, ag, pt){
+        const lines = list.map((x,i)=>`${i+1}. ${x.name} - ${fmtPct.format(x.pct)} %`).join('\n');
+        return `Am Saleserfolg des Angebots ${pt} von ${ag} waren folgende Personen folgendermaßen beteiligt:\n${lines}\n*Dies ist eine automatisch erzeugte Nachricht.*`;
+      }
+
+      function setTeamsLinksEncoded(msgEnc, topicEnc){
+        const baseWeb = 'https://teams.microsoft.com/l/chat/0/0';
+        btnOE.href = `${baseWeb}?users=${encodeURIComponent(emails.OE)}&message=${msgEnc}&topicName=${topicEnc}`;
+        btnPI.href = `${baseWeb}?users=${encodeURIComponent(emails.PI)}&message=${msgEnc}&topicName=${topicEnc}`;
+        btnCP.href = `${baseWeb}?users=${encodeURIComponent(emails.CP)}&message=${msgEnc}&topicName=${topicEnc}`;
+      }
+
+      function openTeamsPreferApp(email, msgEnc, topicEnc){
+        const app = `msteams:/l/chat/0/0?users=${encodeURIComponent(email)}&message=${msgEnc}&topicName=${topicEnc}`;
+        const web = `https://teams.microsoft.com/l/chat/0/0?users=${encodeURIComponent(email)}&message=${msgEnc}&topicName=${topicEnc}`;
+
+        let fallback = setTimeout(()=>{ window.open(web, '_blank', 'noopener'); }, 900);
+        try {
+          // Versuche native App
+          window.location.href = app;
+        } catch(e) {
+          clearTimeout(fallback);
+          window.open(web, '_blank', 'noopener');
+        }
+        // Timer am Leben halten (best effort)
+        setTimeout(()=>{}, 1500);
+      }
+
+      function attachTeamsClickHandlers(){
+        btnOE.addEventListener('click', (e)=>{ e.preventDefault(); openTeamsPreferApp(emails.OE, lastMsgEnc, lastTopicEnc); });
+        btnPI.addEventListener('click', (e)=>{ e.preventDefault(); openTeamsPreferApp(emails.PI, lastMsgEnc, lastTopicEnc); });
+        btnCP.addEventListener('click', (e)=>{ e.preventDefault(); openTeamsPreferApp(emails.CP, lastMsgEnc, lastTopicEnc); });
+      }
+
+      function showResult(){
+        const v = validate();
+        if (!v.ok){
+          errorsEl.innerHTML = v.errs.map(e=>`<li>${e}</li>`).join('');
+          nextBtn.style.transform = 'translateX(2px)';
+          setTimeout(()=>nextBtn.style.transform='', 80);
+          return;
+        }
+        errorsEl.innerHTML = '';
+
+        const { list, used, nW } = computeResults(v.rows, v.totals);
+        kpiAg.textContent = auftraggeber.value.trim();
+        kpiPt.textContent = projekttitel.value.trim();
+        kpiCat.textContent = used.length ? used.map(c=>c.label).join(', ') : '–';
+        kpiW.textContent = used.length
+          ? used.map(c=>`${c.label} ${fmtPct.format(nW[c.key]*100)} %`).join(' · ')
+          : '–';
+
+        resultBody.innerHTML = '';
+        let sum = 0;
+        list.forEach(x=>{
+          sum += x.pct;
+          const tr = document.createElement('tr');
+          const td1 = document.createElement('td'); td1.textContent = x.name || '(unbenannt)';
+          const td2 = document.createElement('td'); td2.textContent = `${fmtPct.format(x.pct)} %`;
+          tr.appendChild(td1); tr.appendChild(td2);
+          resultBody.appendChild(tr);
+        });
+        sumCheck.textContent = `Summe: ${fmtPct.format(sum)} %`;
+
+        const pretty = buildRawTeamsMessage(list, auftraggeber.value.trim(), projekttitel.value.trim());
+        previewMsg.textContent = pretty;
+
+        // WICHTIG: komplette Message erst NACH dem Zusammenbau encodieren (Fix gegen leere/weiße Seite)
+        lastMsgEnc = encodeURIComponent(pretty);
+        lastTopicEnc = encodeURIComponent(`Sales-Beteiligung: ${projekttitel.value.trim()}`);
+        setTeamsLinksEncoded(lastMsgEnc, lastTopicEnc);
+
+        viewInput.classList.add('hide');
+        viewResult.classList.remove('hide');
+      }
+
+      function copyPreview(){
+        const text = previewMsg.textContent || '';
+        navigator.clipboard.writeText(text).then(()=>{},()=>{});
+      }
+
+      function resetForm(){
+        auftraggeber.value = '';
+        projekttitel.value = '';
+        tbody.innerHTML = '';
+        addRow(true);
+        errorsEl.innerHTML = '';
+        recalc();
+      }
+
+      addRowBtn.addEventListener('click', ()=>addRow(true));
+      nextBtn.addEventListener('click', showResult);
+      resetBtn.addEventListener('click', resetForm);
+
+      backBtn.addEventListener('click', ()=>{
+        viewResult.classList.add('hide');
+        viewInput.classList.remove('hide');
+      });
+      startOverBtn.addEventListener('click', ()=>{
+        resetForm();
+        viewResult.classList.add('hide');
+        viewInput.classList.remove('hide');
+      });
+      copyMsgBtn.addEventListener('click', copyPreview);
+
+      // Init
+      addRow(true);
+      addRow(false); addRow(false);
+      recalc();
+      attachTeamsClickHandlers();
+
+      document.addEventListener('keydown', (e)=>{
+        if (e.key === 'Enter' && e.target && e.target.tagName === 'INPUT'){
+          e.preventDefault();
+        }
+      });
+    })();
+  </script>
+</body>
+</html>
